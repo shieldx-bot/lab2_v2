@@ -40,7 +40,6 @@ kubectl create configmap scheduler-config -n kube-system --from-file=scheduler-c
 kubectl apply -f scheduler-deploy.yaml
 kubectl rollout status deploy/scheduler-plugin -n kube-system --timeout=180s
 ```
-
 Kiem tra pod scheduler:
 
 ```bash

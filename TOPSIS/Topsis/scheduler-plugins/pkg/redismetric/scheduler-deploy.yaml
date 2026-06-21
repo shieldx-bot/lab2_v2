@@ -17,7 +17,7 @@ spec:
       containers:
       - name: scheduler
         image: localhost:5000/scheduler-plugins/kube-scheduler:v20260621-
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Never
         env:
         - name: REDIS_ADDR
           value: 54.255.223.141:6379
