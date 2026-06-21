@@ -16,7 +16,7 @@ spec:
       
       containers:
       - name: db-service
-        image: shieldxbot/go-db-service:v1.0.3
+        image: shieldxbot/go-db-service:v1.0.4
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
