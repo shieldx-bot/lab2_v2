@@ -4,7 +4,6 @@ metadata:
   name: db-service
   namespace: default
 spec:
-  schedulerName: my-scheduler
   replicas: 3
   selector:
     matchLabels:
@@ -14,7 +13,7 @@ spec:
       labels:
         app: db-service
     spec:
-      
+      schedulerName: my-scheduler
       containers:
       - name: db-service
         image: shieldxbot/go-db-service:v1.0.4
