@@ -36,6 +36,7 @@ cd LAB_CENTER/Lab2/scheduler-plugins/pkg/redismetric
 
 kubectl delete cm scheduler-config -n kube-system --ignore-not-found
 kubectl create configmap scheduler-config -n kube-system --from-file=scheduler-config.yaml=scheduler-config.yaml
+kubectl create serviceaccount scheduler-plugin -n kube-system
 
 kubectl apply -f scheduler-deploy.yaml
 kubectl rollout status deploy/scheduler-plugin -n kube-system --timeout=180s
@@ -43,6 +44,10 @@ kubectl rollout status deploy/scheduler-plugin -n kube-system --timeout=180s
 Kiem tra pod scheduler:
 
 ```bash
+kubectl get pods -n kube-system -o wide | grep scheduler-plugin
+
+
+
 kubectl get pods -n kube-system -l component=scheduler -o wide
 ```
 
