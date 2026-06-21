@@ -16,7 +16,7 @@ spec:
       serviceAccountName: scheduler-plugin   # tạo nếu chưa có
       containers:
       - name: scheduler
-        image: localhost:5000/scheduler-plugins/kube-scheduler:v20260421-
+        image: localhost:5000/scheduler-plugins/kube-scheduler:v20260621-
         imagePullPolicy: IfNotPresent
         env:
         - name: REDIS_ADDR
