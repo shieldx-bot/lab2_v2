@@ -3,3 +3,5 @@ redis
 datetime
 psutil
 psycopg2-binary
+cassandra-driver
+tenacity
