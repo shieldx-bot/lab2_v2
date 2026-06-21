@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	// Vẫn sử dụng go-redis vì Dragonfly tương thích 100% với giao thức của Redis
 	"github.com/redis/go-redis/v9"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -64,37 +65,49 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
-// BUG: godotenv.Load() is called on every function invocation, which is inefficient and can cause performance issues
-// BUG: Context shadowing - the input ctx parameter is overwritten with a new context, losing any parent context values or cancellation signals
-// BUG: Redis client is created and closed on every call, causing connection overhead and potential resource exhaustion
+// --- CHỈ THÊM 3 BIẾN NÀY ĐỂ CHỨA 2 IP DRAGONFLY ---
+var (
+	dfAddrs = []string{"192.168.24.2:6379", "192.168.24.6:6379"}
+	dfIdx   int
+	dfMu    sync.Mutex
+)
+
 func CalculateTopNodeFromDB(ctx context.Context) (string, error) {
 
 	godotenv.Load()
 
-	redisAddr := getEnv("REDIS_ADDR", "redis.default.svc.cluster.local:6379")
-	str := getEnv("str", "multi-node-demo-worker")
+	str := getEnv("str", "node")
 	// Create a context with timeout to avoid hanging connections
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	// Configure Redis client
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     redisAddr, // Redis server address
-		Password: "",        // No password set
-		DB:       0,         // Default DB
+	// --- CHỈ SỬA CHỖ CONNECT NÀY ---
+	// Lấy luân phiên 1 trong 2 IP Dragonfly
+	dfMu.Lock()
+	dragonflyAddr := dfAddrs[dfIdx]
+	dfIdx = (dfIdx + 1) % len(dfAddrs)
+	dfMu.Unlock()
+
+	// Configure client để kết nối tới server Dragonfly
+	dfClient := redis.NewClient(&redis.Options{
+		Addr:     dragonflyAddr, // Dragonfly server address (192.168.24.2 hoặc 192.168.24.6)
+		Password: "",            // No password set
+		DB:       0,             // Default DB
 	})
-	defer rdb.Close()
+	defer dfClient.Close()
+	// -------------------------------
 
 	// Test connection with PING
-	pong, err := rdb.Ping(ctx).Result()
+	pong, err := dfClient.Ping(ctx).Result()
 	if err != nil {
-		return "", fmt.Errorf("could not connect to Redis: %w", err)
+		return "", fmt.Errorf("could not connect to Dragonfly: %w", err)
 	}
-	// BUG: fmt.Println should not be used in production code, use proper logging instead
-	fmt.Println("Connected to Redis (random_forest):", pong)
+
+	fmt.Println("Connected to Dragonfly (random_forest):", pong)
+
 	// find the best index and format node name
 	// bestIndex := Score(decision_matrix)
-	index, err := rdb.Get(ctx, "random_forest_TOP").Int()
+	index, err := dfClient.Get(ctx, "random_forest_TOP").Int()
 	if err != nil {
 		if err == redis.Nil {
 			index = 0
@@ -129,26 +142,21 @@ func calculateScore(nodeName string, topNodes string) int64 {
 }
 
 // Score là hàm quan trọng nhất, được gọi để chấm điểm cho từng node
-
-// BUG: CalculateTopNodeFromDB is called on every Score invocation without caching, despite the RedisMetricPlugin having a cache field
-// BUG: The cache and cacheTTL fields in RedisMetricPlugin struct are never used
 func (rmp *RedisMetricPlugin) Score(ctx context.Context, state fwk.CycleState, p *v1.Pod, nodeInfo fwk.NodeInfo) (int64, *fwk.Status) {
 	nodeName := ""
 	if n := nodeInfo.Node(); n != nil {
 		nodeName = n.Name
 	}
 
-	// Lấy danh sách top nodes từ DB thay vì Redis
+	// Lấy danh sách top nodes
 	topNodes, err := CalculateTopNodeFromDB(ctx)
 	if err != nil {
 		klog.ErrorS(err, "Failed to get top nodes from DB, returning score 0", "node", nodeName)
 		return 0, nil
 	}
 
-	// Nếu không có top nodes nào, trả về 0
-	// BUG: len(topNodes) check is incorrect - topNodes is a string, not a slice. An empty string "" has length 0, but this check may not be the intended logic
 	if len(topNodes) == 0 {
-		klog.V(4).InfoS("No top nodes found in DB, returning score 0", "node", nodeName)
+		klog.V(4).InfoS("No top nodes found, returning score 0", "node", nodeName)
 		return 0, nil
 	}
 

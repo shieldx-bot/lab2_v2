@@ -2,32 +2,34 @@ import psutil
 import time
 import redis
 import json
+from dotenv import load_dotenv
+import os
+import random
+
+load_dotenv()
+
+# Cấu hình IP Dragonfly
+DRAGONFLY_NODES = ["192.168.24.2", "192.168.24.6"]
+df_host = random.choice(DRAGONFLY_NODES)
 
 r = redis.Redis(
-    host="localhost", port=6379, db=0, decode_responses=True
+    host=df_host, port=6379, db=0, decode_responses=True
 )
+
 try:
     if r.ping():
-        print("Connected to Redis!")
+        print(f"Connected to Dragonfly at {df_host}!")
 except redis.ConnectionError:
-    print("Could not connect to Redis.")
+    print(f"Could not connect to Dragonfly at {df_host}.")
 
-from dotenv import load_dotenv
-load_dotenv()
-import os
-
-
-
-NODE_ID = os.getenv("NODE_ID")
+NODE_ID = os.getenv("NODE_ID", "2") # Default fallback nếu không có env
 URL = os.getenv("URL")
 TIME_DELAY = os.getenv("TIME_DELAY")
+
 print("NODE_ID:", NODE_ID)
 if NODE_ID is None or TIME_DELAY is None:
-    print("I can't find varible environment")
+    print("I can't find variable environment")
     exit(0)
-
-
-
 
 while True:
     # snapshot đầu
