@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: api-services
 spec:
+  schedulerName: my-scheduler
   replicas: 2  # minReplicaCount từ KEDA ScaledObject
   selector:
     matchLabels:

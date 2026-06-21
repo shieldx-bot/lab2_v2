@@ -4,6 +4,7 @@ metadata:
   name: db-service
   namespace: default
 spec:
+  schedulerName: my-scheduler
   replicas: 3
   selector:
     matchLabels:
