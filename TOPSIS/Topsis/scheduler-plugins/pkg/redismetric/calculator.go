@@ -747,7 +747,7 @@ func Score(data Metrics) int {
 		}
 	}
 	ctx := context.Background()
-	var err = rdb.Set(ctx, "TOP", "k3d-node-agent-"+fmt.Sprintf("%d", index), 0).Err()
+	var err = rdb.Set(ctx, "TOP", "node"+fmt.Sprintf("%d", index), 0).Err()
 	fmt.Printf("\n TOP: %d", index)
 	if err != nil {
 		panic(err)
