@@ -15,6 +15,8 @@ import (
 
 	"github.com/gocql/gocql"
 	"github.com/nats-io/nats.go"
+	"github.com/shirou/gopsutil/v4/cpu"
+	"github.com/shirou/gopsutil/v4/mem"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -30,12 +32,13 @@ type Config struct {
 }
 
 var config = Config{
-	ScyllaHosts: []string{"192.168.24.2", "192.168.24.3", "192.168.24.6"},
+	ScyllaHosts: []string{"192.168.24.2", "192.168.24.3", "192.168.24.4"},
 	Keyspace:    "my_keyspace",
 	NATSServers: []string{
-		"nats://192.168.24.6:6222",
+		"nats://192.168.24.3:6222",
 		"nats://192.168.24.2:4222",
-		"nats://192.168.24.3:5222"},
+		"nats://192.168.24.4:5222",
+	},
 	DataCenter: "datacenter1",
 	MaxWorkers: 50, // có thể tùy chỉnh theo tải
 }
@@ -61,6 +64,36 @@ type DBResponse struct {
 	Data    interface{} `json:"data,omitempty"`
 	Error   string      `json:"error,omitempty"`
 	Message string      `json:"message,omitempty"`
+}
+
+func updateWorker() {
+	for {
+		v, _ := mem.VirtualMemory()
+		cSlice, _ := cpu.Percent(0, true) // get overall CPU percent
+		cpuPercent := 0.0
+		if len(cSlice) > 0 {
+			for _, i := range cSlice {
+				cpuPercent += i
+			}
+			cpuPercent = cpuPercent / float64(len(cSlice))
+		}
+		fmt.Print("len(cSlice):", len(cSlice))
+
+		// almost every return value is a struct
+		fmt.Printf("UsedPercentRAM: %.2f%%\n", v.UsedPercent)
+		fmt.Printf("UsedPercentCPU: %.2f%%\n", cpuPercent)
+		if v.UsedPercent < 40 && cpuPercent < 40 {
+			config.MaxWorkers = 200
+		} else if v.UsedPercent < 60 && cpuPercent < 60 {
+			config.MaxWorkers = 100
+		} else if v.UsedPercent < 80 && cpuPercent < 80 {
+			config.MaxWorkers = 50
+		} else {
+			config.MaxWorkers = 10
+		}
+		fmt.Print("config max:", config.MaxWorkers)
+		time.Sleep(10 * time.Second)
+	}
 }
 
 // ============================================
@@ -519,6 +552,7 @@ func startSubscriptions(ctx context.Context, workerSem chan struct{}, wg *sync.W
 // MAIN
 // ============================================
 func main() {
+	go updateWorker()
 	if err := initScylla(); err != nil {
 		log.Fatalf("❌ Scylla init failed: %v", err)
 	}
