@@ -1,4 +1,3 @@
-package nguyenkhoi
 package main
 
 import (
@@ -308,7 +307,7 @@ func handleGetDanhSachMonHocPhanDangKy(params map[string]interface{}) DBResponse
 	var results []map[string]interface{}
 	var item struct {
 		MaDangKy, MaSinhVien, Ho, Ten, MaLopHocPhan, TenLopHocPhan, MaMonHoc, PhongHoc, ThoiKhoaBieu, HinhThuc, NgayDangKy, TrangThai string
-		SoLuongToiDa                                                                                                                int
+		SoLuongToiDa                                                                                                                  int
 	}
 	for iter.Scan(&item.MaDangKy, &item.MaSinhVien, &item.Ho, &item.Ten, &item.MaLopHocPhan, &item.TenLopHocPhan, &item.MaMonHoc, &item.PhongHoc, &item.ThoiKhoaBieu, &item.SoLuongToiDa, &item.HinhThuc, &item.NgayDangKy, &item.TrangThai) {
 		row := map[string]interface{}{
@@ -379,11 +378,11 @@ func handleGetDanhSachLopHocPhan(params map[string]interface{}) DBResponse {
 
 	var lhpRows []struct {
 		MaLopHocPhan, TenLopHocPhan, MaMonHoc, PhongHoc, ThoiKhoaBieu, TrangThai, NgayBatDau, NgayKetThuc string
-		SoLuongToiDa                                                                                    int
+		SoLuongToiDa                                                                                      int
 	}
 	var row struct {
 		MaLopHocPhan, TenLopHocPhan, MaMonHoc, PhongHoc, ThoiKhoaBieu, TrangThai, NgayBatDau, NgayKetThuc string
-		SoLuongToiDa                                                                                    int
+		SoLuongToiDa                                                                                      int
 	}
 	for iter.Scan(&row.MaLopHocPhan, &row.TenLopHocPhan, &row.MaMonHoc, &row.PhongHoc, &row.ThoiKhoaBieu, &row.SoLuongToiDa, &row.TrangThai, &row.NgayBatDau, &row.NgayKetThuc) {
 		lhpRows = append(lhpRows, row)
