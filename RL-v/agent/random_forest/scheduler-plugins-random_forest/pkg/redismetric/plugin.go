@@ -67,7 +67,7 @@ func getEnv(key, fallback string) string {
 
 // --- CHỈ THÊM 3 BIẾN NÀY ĐỂ CHỨA 2 IP DRAGONFLY ---
 var (
-	dfAddrs = []string{"192.168.24.2:6379", "192.168.24.6:6379"}
+	dfAddrs = []string{"192.168.24.3:6379", "192.168.24.4:6379"}
 	dfIdx   int
 	dfMu    sync.Mutex
 )
@@ -76,7 +76,7 @@ func CalculateTopNodeFromDB(ctx context.Context) (string, error) {
 
 	godotenv.Load()
 
-	str := getEnv("str", "node")
+	str := "node"
 	// Create a context with timeout to avoid hanging connections
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
