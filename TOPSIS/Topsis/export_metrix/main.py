@@ -159,6 +159,10 @@ def create_table(session):
             PRIMARY KEY ((node_id), id)
         ) WITH CLUSTERING ORDER BY (id DESC)
     """)
+    session.execute("""
+        DROP TABLE MetricData1; 
+    """)
+
 
     # Đã sửa trường timestamp thành kiểu timestamp hợp lệ
     session.execute("""

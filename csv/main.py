@@ -64,7 +64,7 @@ def export_metric_data_1_to_csv(output_filename="metric_data_1_export.csv"):
     
     # Xây dựng câu lệnh SELECT bằng cách bọc các cột có ký tự hoa vào cặp dấu ""
     cql_columns = [f'"{f}"' if any(c.isupper() for c in f) or "_" in f else f for f in fields]
-    query = f"SELECT {', '.join(cql_columns)} FROM MetricData5"
+    query = f"SELECT {', '.join(cql_columns)} FROM MetricData2"
     
     logger.info("Đang kết nối tới ScyllaDB để lấy dữ liệu...")
     
