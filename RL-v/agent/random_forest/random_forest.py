@@ -28,24 +28,18 @@ print("y_test:", len(y_test))
 
 clf = RandomForestClassifier(max_depth=2, random_state=0)
 clf.fit(X_train, y_train)
+ 
 
-# Cấu hình IP Dragonfly
-DRAGONFLY_NODES = ["192.168.24.2", "192.168.24.6"]
-df_host = random.choice(DRAGONFLY_NODES)
-
-r = redis.Redis(
-    host=df_host, port=6379, db=0, decode_responses=True
-)
-
-try:
-    if r.ping():
-        print(f"Connected to Dragonfly at {df_host}!")
-except redis.ConnectionError:
-    print(f"Could not connect to Dragonfly at {df_host}.")
-
+w = redis.Redis(
+        host="192.168.24.2", port=6379, db=0, decode_responses=True)
+ 
 
 def RandomForestClassifier_Worker():
     while True:
+        DRAGONFLY_NODES = ["192.168.24.4", "192.168.24.3"]
+        df_host = random.choice(DRAGONFLY_NODES)
+        r = redis.Redis(
+        host=df_host, port=6379, db=0, decode_responses=True)
         rows = []
         # lấy tất cả key NODE-*
         keys = r.keys("NODE-*")
@@ -84,7 +78,7 @@ def RandomForestClassifier_Worker():
         elif len(anomaly_nodes) > 0:
             random_index = random.randrange(len(anomaly_nodes))
             top_node_id = int(anomaly_nodes[random_index])
-            r.set("random_forest_TOP", str(top_node_id))
+            w.set("random_forest_TOP", str(top_node_id))
             print(f"Anomaly detected! Set random_forest_TOP to: {top_node_id}")
 
         time.sleep(5)
