@@ -64,16 +64,16 @@ kubectl get pods -n kube-system -l component=scheduler -o wide
 Tao namespace test va pod su dung `schedulerName: my-scheduler`:
 
 ```bash
-kubectl create ns scheduler-test --dry-run=client -o yaml | kubectl apply -f -
+kubectl create ns test --dry-run=client -o yaml | kubectl apply -f -
 
 cat <<'EOF' | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
   name: custom-scheduler-3
-  namespace: scheduler-test
+  namespace: test
 spec:
-  schedulerName: my-scheduler
+  schedulerName: my-scheduler-random-forest
   containers:
   - name: pause
     image: registry.k8s.io/pause:3.9

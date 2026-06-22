@@ -13,7 +13,7 @@ spec:
       labels:
         app: db-service
     spec:
-      schedulerName: my-scheduler
+      schedulerName:  my-scheduler-random-forest
       containers:
       - name: db-service
         image: shieldxbot/go-db-service:v1.0.4

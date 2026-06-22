@@ -12,7 +12,7 @@ spec:
       labels:
         app: api-services
     spec:
-      schedulerName: my-scheduler
+      schedulerName:  my-scheduler-random-forest
       containers:
       - name: api-services
         image: shieldxbot/go-api-services:v1.0.4
